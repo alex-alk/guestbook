@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Repository\CommentRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: CommentRepository::class)]
 #[ORM\HasLifecycleCallbacks]
@@ -16,16 +17,20 @@ class Comment
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    private ?string $author = null;
+    #[Assert\NotBlank]
+    private string $author;
 
     #[ORM\Column(type: Types::TEXT)]
-    private ?string $text = null;
+    #[Assert\NotBlank]
+    private string $text;
 
     #[ORM\Column(length: 255)]
-    private ?string $email = null;
+    #[Assert\NotBlank]
+    #[Assert\Email]
+    private string $email;
 
     #[ORM\Column]
-    private ?\DateTimeImmutable $createdAt = null;
+    private ?\DateTime $createdAt = null;
 
     #[ORM\ManyToOne(inversedBy: 'comments')]
     #[ORM\JoinColumn(nullable: false)]
@@ -80,12 +85,12 @@ class Comment
         return $this;
     }
 
-    public function getCreatedAt(): ?\DateTimeImmutable
+    public function getCreatedAt(): ?\DateTime
     {
         return $this->createdAt;
     }
 
-    public function setCreatedAt(\DateTimeImmutable $createdAt): self
+    public function setCreatedAt(\DateTime $createdAt): self
     {
         $this->createdAt = $createdAt;
 

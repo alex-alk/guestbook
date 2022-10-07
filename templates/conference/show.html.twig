@@ -8,8 +8,8 @@
     {% if comments|length > 0 %}
         <div>There are {{ comments|length }} comments.</div>
         {% for comment in comments %}
-            {% if comment.photofilename %}
-                <img serc="{{ asset('uploads/photos/' ~ comment.photofilename)}}" />
+            {% if comment.photoFilename %}
+                <img src="{{ asset('uploads/photos/' ~ comment.photoFilename)}}" />
             {% endif %}
             <h4>{{ comment.author }}</h4>
             <small>
@@ -31,4 +31,6 @@
     {% else %}
         <div>No comments have been posted yet for this conference.</div>
     {% endif %}
+    <h2>Add your own feedback</h2>
+    {{ form(comment_form) }}
 {% endblock %}
