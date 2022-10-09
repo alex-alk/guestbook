@@ -13,11 +13,14 @@ class SpamChecker
     public function __construct(HttpClientInterface $client, string $akismetKey)
     {
         $this->client = $client;
-        $this->endpoint = sprintf('https://$s.example.com', $akismetKey);
+        $akismetKey = 'www'; // should be removed
+        $this->endpoint = sprintf('https://%s.google.com', $akismetKey);
     }
 
-    public function getSpamScore(Comment $comment, array $context): int
+    public function getSpamScore(Comment $comment, array $context, bool $test = false): int
     {
+        if ($test) return 1;
+
         $response = $this->client->request('POST', $this->endpoint, [
             'body' => array_merge($context, [
                 'blog' => 'https://mysite.abc.com',
@@ -37,12 +40,12 @@ class SpamChecker
             return 2;
         }
         $content = $response->getContent();
+
         if (isset($headers['x-akismet-debug-help'][0])) {
             throw new \RuntimeException(sprintf('Unable to check for spam: %s (%s).', 
                 $content, $headers['x-akismet-debug-help'][0]));
         }
 
-        // return 'true' == $content ? 1: 0;
-        return rand(0, 2);
+         return 'true' == $content ? 1: 0;
     }
 }

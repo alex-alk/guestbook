@@ -59,10 +59,10 @@ class ConferenceController extends AbstractController
             $context = [
                 'user_ip' => $request->getClientIp(),
                 'user_agent' => $request->headers->get('user-agent'),
-                'referrer' => $request->header->get('referer'),
+                'referrer' => $request->headers->get('referer'),
                 'permalink' => $request->getUri()
             ];
-            if (2 == $spamChecker->getSpamScore($comment, $context)) {
+            if (2 == $spamChecker->getSpamScore($comment, $context, true)) {
                 throw new \RuntimeException('This is a spam');
             }
 
