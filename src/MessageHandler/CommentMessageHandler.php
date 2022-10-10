@@ -47,7 +47,6 @@ class CommentMessageHandler implements MessageHandlerInterface
         }
 
         if ($this->workflow->can($comment, 'accept')) {
-            dump("**********************************************");
             $score = $this->spamChecker->getSpamScore($comment, $message->getContext(), true);
             $transition = 'accept';
             if (2 === $score) {
@@ -60,7 +59,6 @@ class CommentMessageHandler implements MessageHandlerInterface
             $this->entityManager->flush();
             $this->bus->dispatch($message);
         } elseif ($this->workflow->can($comment, 'publish') || $this->workflow->can($comment, 'publish_ham')) {
-            dump("**********************************************2222222222222222");
             $this->mailer->send((new NotificationEmail())
                 ->subject('New comment posted')
                 ->htmlTemplate('emails/comment_notification.html.twig')
