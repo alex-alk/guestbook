@@ -5,6 +5,7 @@ namespace App\MessageHandler;
 use App\Message\CommentMessage;
 use App\Repository\CommentRepository;
 use App\Security\SpamChecker;
+use App\Service\ImageOptimizer;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Bridge\Twig\Mime\NotificationEmail;
@@ -21,13 +22,16 @@ class CommentMessageHandler implements MessageHandlerInterface
     private $bus;
     private $workflow;
     private $mailer;
+    private $imageOptimizer;
     private $adminEmail;
+    private $photoDir;
     private $logger;
 
     public function __construct(EntityManagerInterface $entityManager, SpamChecker $spamChecker, 
         CommentRepository $commentRepository, MessageBusInterface $bus,
         WorkflowInterface $commentStateMachine, LoggerInterface $logger = null,
-        MailerInterface $mailer, string $adminEmail)
+        MailerInterface $mailer, string $adminEmail, ImageOptimizer $imageOptimizer,
+        string $photoDir)
     {
         $this->entityManager = $entityManager;
         $this->spamChecker = $spamChecker;
@@ -35,7 +39,9 @@ class CommentMessageHandler implements MessageHandlerInterface
         $this->bus = $bus;
         $this->workflow = $commentStateMachine;
         $this->mailer = $mailer;
+        $this->imageOptimizer = $imageOptimizer;
         $this->adminEmail = $adminEmail;
+        $this->photoDir = $photoDir;
         $this->logger = $logger;
     }
 
@@ -66,6 +72,13 @@ class CommentMessageHandler implements MessageHandlerInterface
                 ->to($this->adminEmail)
                 ->context(['comment' => $comment])
             );
+        } elseif ($this->workflow->can($comment, 'optimize')) {
+            if ($comment->getPhotoFilename()) {
+                $this->imageOptimizer->resize(
+                    $this->photoDir.'/'.$comment->getPhotoFilename());
+            }
+            $this->workflow->apply($comment, 'optimize');
+            $this->entityManager->flush();
         } elseif ($this->logger) {
             $this->logger->debug('Dropping comment message', [
                 'comment' => $comment->getId(), 'state' => $comment->getState()
