@@ -2,41 +2,63 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
+use ApiPlatform\Metadata\ApiFilter;
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
 use App\Repository\CommentRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: CommentRepository::class)]
 #[ORM\HasLifecycleCallbacks]
+#[ApiResource(
+    operations: [
+        new Get(),
+        new GetCollection()
+    ],
+    order: ['createdAt' => 'DESC'],
+    paginationEnabled: false,
+)]
+#[ApiFilter(SearchFilter::class, properties: ['conference' => 'exact'])]
 class Comment
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    private ?int $id = null;
+    #[Groups(['conference:list', 'conference:item'])]
+    private int $id;
 
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank]
+    #[Groups(['conference:list', 'conference:item'])]
     private string $author;
 
     #[ORM\Column(type: Types::TEXT)]
     #[Assert\NotBlank]
+    #[Groups(['conference:list', 'conference:item'])]
     private string $text;
 
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank]
     #[Assert\Email]
+    #[Groups(['conference:list', 'conference:item'])]
     private string $email;
 
     #[ORM\Column]
+    #[Groups(['conference:list', 'conference:item'])]
     private ?\DateTime $createdAt = null;
 
     #[ORM\ManyToOne(inversedBy: 'comments')]
     #[ORM\JoinColumn(nullable: false)]
+    #[Groups(['conference:list', 'conference:item'])]
     private ?Conference $conference = null;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Groups(['conference:list', 'conference:item'])]
     private ?string $photoFilename = null;
 
     #[ORM\Column(length: 255, options: ["default" => "submitted"])]
